@@ -1,44 +1,44 @@
--- Ensure getgenv() has a configs table
-getgenv().configs = getgenv().configs or {}
+-- Stop previous execution if script runs again
+if getgenv().configs then
+    getgenv().configs.Run = false
+    task.wait() -- Wait briefly to stop old loop
 
--- Configuration Variables (Uses getgenv() for customization)
-local reach = getgenv().configs.reach or 8.00
-local hit_distance = getgenv().configs.hit_distance or reach
-local auto_swing = getgenv().configs.auto_swing or false
-local auto_equip = getgenv().configs.auto_equip or true
-local multi = getgenv().configs.multi or 5
-local CircleT = getgenv().configs.CircleT or 0.5
-
--- Disable previous connections if they exist
-local connections = getgenv().configs.connections
-if connections then
-    local Disable = getgenv().configs.Disable
-    for _, v in pairs(connections) do
-        v:Disconnect()
+    -- Disconnect previous connections
+    if getgenv().configs.connections then
+        for _, v in pairs(getgenv().configs.connections) do
+            v:Disconnect()
+        end
     end
-    Disable:Fire()
-    Disable:Destroy()
+
+    -- Fire and destroy Disable event
+    if getgenv().configs.Disable then
+        getgenv().configs.Disable:Fire()
+        getgenv().configs.Disable:Destroy()
+    end
+
+    -- Clear the configs table
     table.clear(getgenv().configs)
 end
 
--- Initialize new configurations
-local Disable = Instance.new("BindableEvent")
+-- Initialize configurations
 getgenv().configs = {
+    reach = 8.00,
+    hit_distance = 8.00,
+    auto_swing = false,
+    auto_equip = true,
+    multi = 5,
+    CircleT = 0.5,
+    DeathCheck = true,
+    Run = true, -- Used to control loop execution
     connections = {},
-    Disable = Disable,
-    Size = Vector3.new(reach, reach, reach),
-    DeathCheck = getgenv().configs.DeathCheck ~= false, -- Defaults to true
-    AutoSwing = auto_swing,
-    AutoEquip = auto_equip,
+    Disable = Instance.new("BindableEvent")
 }
 
 local WS = workspace
 
 -- Remove old circle if it exists
-local Destroy = WS:FindFirstChild("Circle")
-if Destroy then
-    Destroy:Destroy()
-end
+local oldCircle = WS:FindFirstChild("Circle")
+if oldCircle then oldCircle:Destroy() end
 
 -- Create Circle Function
 local function createCircle()
@@ -53,16 +53,16 @@ local function createCircle()
     circle.Shape = Enum.PartType.Ball
     circle.CastShadow = false
     circle.Transparency = 1  -- Hidden by default
-    circle.Size = Vector3.new(reach, reach, reach)
-    circle.Parent = workspace
+    circle.Size = Vector3.new(getgenv().configs.reach, getgenv().configs.reach, getgenv().configs.reach)
+    circle.Parent = WS
     return circle
 end
 
 local function updateCircle(circle, handle)
     if handle then
-        circle.Size = Vector3.new(reach, reach, reach)
+        circle.Size = Vector3.new(getgenv().configs.reach, getgenv().configs.reach, getgenv().configs.reach)
         circle.CFrame = handle.CFrame
-        circle.Transparency = CircleT -- Visible when equipped
+        circle.Transparency = getgenv().configs.CircleT -- Visible when equipped
     else
         circle.Transparency = 1 -- Hidden when not equipped
     end
@@ -76,15 +76,13 @@ local RunService = game:GetService("RunService")
 local lp = Players.LocalPlayer
 
 -- Variables
-local Run = true
 local Ignorelist = OverlapParams.new()
 Ignorelist.FilterType = Enum.RaycastFilterType.Include
 local EquippedTool = nil
 
 -- Helper Functions
 local function getchar(plr)
-    local plr = plr or lp
-    return plr.Character
+    return plr and plr.Character
 end
 
 local function gethumanoid(plr)
@@ -122,7 +120,7 @@ local function Attack(Tool, TouchPart, ToTouch)
     if not HasFF(ToTouch.Parent) then
         if Tool:IsDescendantOf(workspace) then
             Tool:Activate()
-            for v = 1, multi do
+            for _ = 1, getgenv().configs.multi do
                 firetouchinterest(TouchPart, ToTouch, 1)
                 firetouchinterest(TouchPart, ToTouch, 0)
             end
@@ -132,7 +130,7 @@ end
 
 -- Auto Swing Functionality
 local function StartAutoSwing(Tool)
-    while EquippedTool == Tool and Run do
+    while EquippedTool == Tool and getgenv().configs.Run do
         if Tool:IsDescendantOf(workspace) and Tool.Parent == lp.Character then
             Tool:Activate()
         else
@@ -143,19 +141,19 @@ local function StartAutoSwing(Tool)
 end
 
 -- Character Added Event
-lp.CharacterAdded:Connect(function()
+table.insert(getgenv().configs.connections, lp.CharacterAdded:Connect(function()
     task.wait()
     EquippedTool = nil
-end)
+end))
 
 -- Main Loop (Updated)
-while Run do
-    local char = getchar()
+while getgenv().configs.Run do
+    local char = getchar(lp)
     if char and IsAlive(gethumanoid(char)) then
         local Tool = char:FindFirstChildWhichIsA("Tool")
         if Tool and Tool ~= EquippedTool then
             EquippedTool = Tool
-            if getgenv().configs.AutoSwing then
+            if getgenv().configs.auto_swing then
                 task.spawn(StartAutoSwing, Tool)
             end
         elseif not Tool and EquippedTool then
@@ -172,30 +170,24 @@ while Run do
                 Ignorelist.FilterDescendantsInstances = Characters
                 local InstancesInBox = workspace:GetPartBoundsInBox(
                     TouchPart.CFrame,
-                    TouchPart.Size + getgenv().configs.Size,
+                    TouchPart.Size + Vector3.new(getgenv().configs.reach, getgenv().configs.reach, getgenv().configs.reach),
                     Ignorelist
                 )
                 for _, v in ipairs(InstancesInBox) do
                     local Character = v:FindFirstAncestorWhichIsA("Model")
                     if table.find(Characters, Character) then
                         local distance = (char.PrimaryPart.Position - Character.PrimaryPart.Position).Magnitude
-                        if distance <= hit_distance then
-                            -- Skip the LocalPlayer and check if the target has FF
-                            if Character ~= lp and HasFF(Character) then
-                                -- Skip the hit if the other player has FF
-                            else
-                                -- Proceed with attack if no FF
-                                if getgenv().configs.DeathCheck then
-                                    if IsAlive(gethumanoid(Character)) then
-                                        if getgenv().configs.AutoEquip and not EquippedTool then
-                                            EquippedTool = Tool
-                                            Tool.Parent = char
-                                        end
-                                        Attack(EquippedTool, TouchPart, v)
+                        if distance <= getgenv().configs.hit_distance then
+                            if getgenv().configs.DeathCheck then
+                                if IsAlive(gethumanoid(Character)) then
+                                    if getgenv().configs.auto_equip and not EquippedTool then
+                                        EquippedTool = Tool
+                                        Tool.Parent = char
                                     end
-                                else
                                     Attack(EquippedTool, TouchPart, v)
                                 end
+                            else
+                                Attack(EquippedTool, TouchPart, v)
                             end
                         end
                     end
