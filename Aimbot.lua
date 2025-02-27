@@ -1,3 +1,19 @@
+--// Clean up previous instance if it exists
+if _G.AimLockConnection then
+    _G.AimLockConnection:Disconnect()
+    _G.AimLockConnection = nil
+end
+
+if _G.FovCircle then
+    _G.FovCircle:Remove()
+    _G.FovCircle = nil
+end
+
+if _G.LockedLabel then
+    _G.LockedLabel:Remove()
+    _G.LockedLabel = nil
+end
+
 --// Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -5,9 +21,9 @@ local camera = workspace.CurrentCamera
 
 --// Settings
 local SETTINGS = {
-    AimLockOn = true,      -- Toggle Aim Lock ON/OFF
-    MaxRange = 60,        -- Maximum distance to lock on
-    MaxRangeOn = false,     -- If false, script locks onto any visible enemy in the circle regardless of range
+    AimLockOn =true,      -- Toggle Aim Lock ON/OFF
+    MaxRange = 120,        -- Maximum distance to lock on
+    MaxRangeOn = false,    -- If false, script locks onto any visible enemy in the circle regardless of range
     TargetPart = "Head",   -- The part to lock on (Head, HumanoidRootPart, etc.)
     FovCircleSize = 70,    -- The size of the FOV circle (adjustable from here)
 }
@@ -15,12 +31,6 @@ local SETTINGS = {
 --// Variables
 local localPlayer = Players.LocalPlayer
 local currentTarget = nil
-local existingScript = nil  -- Reference to the previous instance of the script
-
--- Check if an existing script is running and disable it
-if existingScript then
-    existingScript:Disconnect()
-end
 
 --// Create an FOV Circle (fixed at the center of the screen)
 local fovCircle = Drawing.new("Circle")
@@ -31,6 +41,7 @@ fovCircle.Thickness = 1
 fovCircle.Transparency = 1
 fovCircle.Filled = false
 fovCircle.Color = Color3.fromRGB(255, 255, 255) -- Default white
+_G.FovCircle = fovCircle  -- Store globally
 
 --// Create "Locked On" label
 local lockedLabel = Drawing.new("Text")
@@ -39,6 +50,7 @@ lockedLabel.Text = ""
 lockedLabel.Color = Color3.fromRGB(255, 0, 0) -- Neon Red
 lockedLabel.Size = 15
 lockedLabel.Center = true
+_G.LockedLabel = lockedLabel  -- Store globally
 
 -- Function to check if a target is valid
 local function isValidTarget(target)
@@ -94,7 +106,7 @@ local function getClosestTarget()
 end
 
 -- Main loop: update aim lock and UI every frame
-existingScript = RunService.RenderStepped:Connect(function()
+_G.AimLockConnection = RunService.RenderStepped:Connect(function()
     local center = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
     fovCircle.Position = center -- Keep the circle centered
     lockedLabel.Position = center - Vector2.new(0, fovCircle.Radius + 15) -- Position label above circle
