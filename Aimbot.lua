@@ -5,11 +5,11 @@ local camera = workspace.CurrentCamera
 
 --// Settings
 local SETTINGS = {
-    AimLockOn = false,      -- Toggle Aim Lock ON/OFF
+    AimLockOn = true,      -- Toggle Aim Lock ON/OFF
     MaxRange = 60,        -- Maximum distance to lock on
-    MaxRangeOn = true,     -- If false, script locks onto any visible enemy in the circle regardless of range
-    TargetPart = "Torso",   -- The part to lock on (Head, HumanoidRootPart, etc.)
-    FovCircleSize = 90,    -- The size of the FOV circle (adjustable from here)
+    MaxRangeOn = false,     -- If false, script locks onto any visible enemy in the circle regardless of range
+    TargetPart = "Head",   -- The part to lock on (Head, HumanoidRootPart, etc.)
+    FovCircleSize = 70,    -- The size of the FOV circle (adjustable from here)
 }
 
 --// Variables
