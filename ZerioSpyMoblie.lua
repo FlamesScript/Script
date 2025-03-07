@@ -67,9 +67,10 @@ BG.BackgroundColor3 = Color3.new(0.141176, 0.141176, 0.141176)
 BG.BackgroundTransparency = 0.4
 BG.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
 BG.Draggable = true
-BG.Position = UDim2.new(0.5, -700, 0.5, -400)
+BG.Position = UDim2.new(0.5, 0, 0.3, 0)
 BG.Size = UDim2.new(0, 500, 0, 300)
 BG.ClipsDescendants = true
+BG.AnchorPoint = Vector2.new(0.5, 0.5)
 
 Ribbon.Name = "Ribbon"
 Ribbon.Parent = BG
