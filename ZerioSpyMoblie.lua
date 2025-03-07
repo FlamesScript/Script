@@ -68,7 +68,7 @@ BG.BackgroundTransparency = 0.4
 BG.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
 BG.Draggable = true
 BG.Position = UDim2.new(0.5, 0, 0.5, 0)
-BG.Size = UDim2.new(0, 509, 0, 700)
+BG.Size = UDim2.new(0, 1000, 0, 700)
 BG.ClipsDescendants = true
 BG.AnchorPoint = Vector2.new(0.5, 0.5)
 
