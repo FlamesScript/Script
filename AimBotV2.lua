@@ -12,7 +12,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local camera = workspace.CurrentCamera
 
-gengenv().SETTINGS = {
+getgenv().SETTINGS = {
     AimLockOn = false,
     TargetPart = "Head",
     FovCircleSize = 70,
