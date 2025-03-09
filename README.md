@@ -2,7 +2,7 @@
 *Stops A RemoteEvent Form Firing*
 
 
-1.```luau
+```luau
 local eventbypass
 
 eventbypass = hookmetamethod(game, "__namecall", function(self, ...)
@@ -17,3 +17,4 @@ eventbypass = hookmetamethod(game, "__namecall", function(self, ...)
     return eventbypass(self, ...)
 end)
 ```
+_____
