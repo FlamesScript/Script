@@ -1,8 +1,8 @@
 ## Script Lib
 *Stops A RemoteEvent Form Firing*
 
-1.
-```luau
+
+1.```luau
 local eventbypass
 
 eventbypass = hookmetamethod(game, "__namecall", function(self, ...)
