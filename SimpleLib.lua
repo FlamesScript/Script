@@ -1,3 +1,10 @@
+local CoreGui = game:GetService("CoreGui")
+ local exit = CoreGui:FindFirstChild(self.base.Name)
+
+if exit then 
+ exit:Destroy()
+end
+
 local library = {flags = {}, windows = {}, open = false}
 
 --Services
@@ -1470,7 +1477,7 @@ function library:Init()
 	end
 	self.base.Parent = game:GetService("CoreGui")
 	self.base.ResetOnSpawn = true
-	self.base.Name = "BaconScripterGUI"
+	self.base.Name = "SimpleLib"
 	
 	for _, window in next, self.windows do
 		if window.canInit and not window.init then
